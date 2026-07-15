@@ -1,16 +1,4 @@
- // ====================================================================
-// firebase-config.js
-// إعدادات مشروع Firebase الخاص بمنصة EduVibe (مشروع myaii-88594)
-// ====================================================================
-// تم تحديثه بقيم مشروع "myaii-88594" الحقيقية من Firebase Console
-// ====================================================================
-// ⚠️ الاستيراد الآن من ملفات محلية (نفس المجلد) بدل gstatic.com مباشرة،
-// لتجاوز مشكلة حجب/CORS كانت تصير عند تحميل الوحدات من داخل الصفحة.
-// تأكد إن الملفات الثلاثة التالية موجودة بنفس مجلد هذا الملف:
-//   firebase-app.js , firebase-auth.js , firebase-firestore.js
-// ====================================================================
-
-import { initializeApp } from "./firebase-app.js";
+ import { initializeApp } from "./firebase-app.js";
 import { getAuth } from "./firebase-auth.js";
 import { getFirestore } from "./firebase-firestore.js";
 
