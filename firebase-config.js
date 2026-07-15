@@ -1,6 +1,17 @@
- import { initializeApp } from "./firebase-app.js";
-import { getAuth } from "./firebase-auth.js";
-import { getFirestore } from "./firebase-firestore.js";
+ // ====================================================================
+// firebase-config.js
+// إعدادات مشروع Firebase الخاص بمنصة EduVibe (مشروع myaii-88594)
+// ====================================================================
+// تم تحديثه بقيم مشروع "myaii-88594" الحقيقية من Firebase Console
+// ====================================================================
+// ⚠️ الاستيراد الآن من esm.sh بدل gstatic.com مباشرة، لتجاوز مشكلة
+// الحجب/CORS. esm.sh يجمع كل الملفات الفرعية بملف واحد فلا حاجة
+// لتنزيل أو رفع أي ملفات SDK يدوياً.
+// ====================================================================
+
+import { initializeApp } from "https://esm.sh/firebase@12.16.0/app";
+import { getAuth } from "https://esm.sh/firebase@12.16.0/auth";
+import { getFirestore } from "https://esm.sh/firebase@12.16.0/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBoSN3a0uIjo6m7RN6qnD4A3R4-Er2TcnI",
