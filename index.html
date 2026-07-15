@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -580,6 +579,7 @@
       const teacherLockedNotice = $('teacherLockedNotice');
 
       let currentUserRole = null; // 'student' | 'teacher' | null
+      let currentUserStatus = null; // 'active' | 'pending' | 'approved' | null
 
       // ---------- حالة المصادقة: نقطة الحماية الرئيسية لكل المسارات ----------
       onAuthStateChanged(auth, async (user) => {
@@ -597,7 +597,7 @@
           return;
         }
 
-        // مسجّل دخول: اجلب دوره من Firestore (مصدر الحقيقة للصلاحيات، وليس الواجهة)
+        // مسجّل دخول: اجلب دوره وحالته من Firestore (مصدر الحقيقة للصلاحيات، وليس الواجهة)
         let studentData = {};
         try {
           const studentDoc = await getDoc(doc(db, "students", user.uid));
@@ -606,6 +606,7 @@
           console.error("تعذر جلب بيانات المستخدم:", err);
         }
         currentUserRole = studentData.role || 'student';
+        currentUserStatus = studentData.status || (currentUserRole === 'teacher' ? 'pending' : 'active');
 
         registerBox.style.display = 'none';
         loginBox.style.display = 'none';
@@ -617,13 +618,18 @@
           ? '<span class="role-pill teacher">معلم</span>'
           : '<span class="role-pill student">طالب</span>';
 
-        // ---------- حماية مسار لوحة المعلم: تظهر فقط إذا role === 'teacher' ----------
-        if (currentUserRole === 'teacher') {
+        // ---------- حماية مسار لوحة المعلم: تظهر فقط إذا role === 'teacher' و status === 'approved' ----------
+        if (currentUserRole === 'teacher' && currentUserStatus === 'approved') {
           teacherSection.style.display = 'block';
           teacherLockedNotice.style.display = 'none';
+        } else if (currentUserRole === 'teacher' && currentUserStatus === 'pending') {
+          teacherSection.style.display = 'none';
+          teacherLockedNotice.style.display = 'block';
+          teacherLockedNotice.textContent = '⏳ حسابك كمعلم قيد المراجعة حالياً من الإدارة. راح تقدر تنشر كورسات بعد الموافقة.';
         } else {
           teacherSection.style.display = 'none';
           teacherLockedNotice.style.display = 'block';
+          teacherLockedNotice.textContent = '🔒 لوحة إضافة الكورسات متاحة فقط لحسابات "المعلم" المعتمدة.';
         }
 
         await loadCourses();
@@ -638,6 +644,8 @@
         const email = $('email').value.trim();
         const password = $('password').value;
         const role = document.querySelector('input[name="accountRole"]:checked').value;
+        // الطالب يفعّل فوراً، المعلم يبدأ "معلّق" لحد ما الإدارة توافق عليه يدوياً من Firestore Console
+        const status = role === 'teacher' ? 'pending' : 'active';
 
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -645,15 +653,20 @@
 
           await updateProfile(user, { displayName: fullName });
 
-          // الدور يُحفظ هنا وقت الإنشاء فقط، وقواعد Firestore تمنع تغييره لاحقاً من طرف المستخدم نفسه
+          // الدور والحالة يُحفظوا هنا وقت الإنشاء فقط، وقواعد Firestore تمنع تغييرهم لاحقاً من طرف المستخدم نفسه
           await setDoc(doc(db, "students", user.uid), {
             fullName,
             email,
             role,
+            status,
             createdAt: new Date().toISOString()
           });
 
           $('studentRegisterForm').reset();
+          if (role === 'teacher') {
+            msg.style.color = '#00d4ff';
+            msg.textContent = '✅ تم إنشاء الحساب! طلبك كمعلم قيد المراجعة الآن.';
+          }
           // onAuthStateChanged سيتكفل تلقائياً بعرض اللوحة المناسبة
         } catch (error) {
           console.error(error);
@@ -747,8 +760,8 @@
         msg.textContent = '';
 
         // تحقق إضافي في الواجهة (الحماية الحقيقية موجودة في قواعد Firestore وليست هنا)
-        if (currentUserRole !== 'teacher') {
-          msg.textContent = '❌ هذه الميزة متاحة فقط لحسابات المعلم.';
+        if (currentUserRole !== 'teacher' || currentUserStatus !== 'approved') {
+          msg.textContent = '❌ هذه الميزة متاحة فقط لحسابات المعلم المعتمدة من الإدارة.';
           return;
         }
         const user = auth.currentUser;
