@@ -14,7 +14,7 @@ import { getAuth } from "https://esm.sh/firebase@12.16.0/auth";
 import { getFirestore } from "https://esm.sh/firebase@12.16.0/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBoSN3a0uIjo6m7RN6qnD4A3R4-Er2TcnI",
+  apiKey: "AIzaSyBoSN3a0uljo6m7RN6qnD4A3R4-Er2TcnI",
   authDomain: "myaii-88594.firebaseapp.com",
   projectId: "myaii-88594",
   storageBucket: "myaii-88594.firebasestorage.app",
