@@ -14,6 +14,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root, [data-theme="dark"] {
             --bg-primary: #0a0a0f; --bg-secondary: #111118; --bg-card: #16161f; --bg-card-hover: #1c1c28;
@@ -98,6 +100,8 @@
         .btn-enroll { background: var(--accent); border: none; color: #000; padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 0.78rem; cursor: pointer; font-family: 'Cairo', sans-serif; white-space: nowrap; }
         .btn-play { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); padding: 7px 14px; border-radius: 50px; font-weight: 700; font-size: 0.78rem; cursor: pointer; font-family: 'Cairo', sans-serif; }
         .empty-note { color: var(--text-muted); text-align: center; padding: 30px; grid-column: 1 / -1; }
+        .subject-chip { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 7px 16px; border-radius: 50px; font-size: 0.82rem; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; transition: var(--transition); }
+        .subject-chip.active { background: var(--accent); border-color: var(--accent); color: #000; }
 
         .why-section { background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 46px 36px; }
         .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
@@ -169,6 +173,11 @@
         }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
         .overlay.show { display: block; }
+
+        /* منع التحديد/النسخ — يُطبّق فقط داخل صندوق عرض المذكرة */
+        .no-copy, .no-copy * {
+            user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -218,6 +227,7 @@
             <h2>الكورسات المتاحة</h2>
             <p>تصفح كل الكورسات مجاناً — فعّل أي كورس بكود التفعيل لفتح محتواه كاملاً</p>
         </div>
+        <div id="subjectFilters" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:24px;"></div>
         <div class="courses-grid" id="publicCoursesGrid"><p class="empty-note">⏳ جاري تحميل الكورسات...</p></div>
     </section>
 
@@ -287,6 +297,19 @@
               <textarea id="courseDesc" placeholder="محاور الدرس والأهداف..." required style="min-height:80px; resize:vertical;"></textarea>
             </div>
             <div>
+              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">المادة:</label>
+              <select id="courseSubject" required>
+                <option value="">اختر المادة...</option>
+                <option value="البرمجة والتكنولوجيا">💻 البرمجة والتكنولوجيا</option>
+                <option value="اللغة العربية">📗 اللغة العربية</option>
+                <option value="اللغة الإنجليزية">📘 اللغة الإنجليزية</option>
+                <option value="الرياضيات">🔢 الرياضيات</option>
+                <option value="العلوم">🔬 العلوم</option>
+                <option value="الدراسات الاجتماعية">🌍 الدراسات الاجتماعية</option>
+                <option value="أخرى">📚 أخرى</option>
+              </select>
+            </div>
+            <div>
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">السعر (بالجنيه — 0 يعني مجاني):</label>
               <input type="number" id="coursePrice" placeholder="مثال: 150" required min="0" step="1">
             </div>
@@ -298,14 +321,15 @@
 
             <div id="liveFields" style="display:none;">
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">رابط البث (يوتيوب لايف / زووم):</label>
-              <input type="url" id="liveUrl" placeholder="https://zoom.us/j/..." style="text-align:left; direction:ltr; margin-bottom:12px;">
+              <input type="url" id="liveUrl" placeholder="https://zoom.us/j/..." style="text-align:left; direction:ltr;">
+              <div class="auth-msg" id="liveUrlError" style="color:#f87171; margin-bottom:12px;"></div>
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">تاريخ ووقت الحصة:</label>
               <input type="datetime-local" id="liveDate">
             </div>
 
             <div id="notesFields" style="display:none;">
-              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">محتوى المذكرة:</label>
-              <textarea id="notesText" placeholder="اكتب محتوى المذكرة هنا بالكامل..." style="min-height:120px; resize:vertical; margin-bottom:12px;"></textarea>
+              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">محتوى المذكرة (حط أي كود برمجي بين ثلاث علامات ` قبله وبعده لتلوينه تلقائياً):</label>
+              <textarea id="notesText" placeholder="اكتب محتوى المذكرة هنا... لتلوين كود برمجي اكتبه بين ```" style="min-height:120px; resize:vertical; margin-bottom:12px;"></textarea>
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">رابط ملف إضافي (اختياري — Google Drive / PDF):</label>
               <input type="url" id="notesUrl" placeholder="https://drive.google.com/..." style="text-align:left; direction:ltr;">
             </div>
@@ -457,6 +481,28 @@
 
       function priceOf(course) { return typeof course.price === 'number' ? course.price : 0; }
 
+      // ---------- العداد التنازلي للحصص المباشرة ----------
+      function formatCountdown(targetIso) {
+        const diff = new Date(targetIso).getTime() - Date.now();
+        if (isNaN(diff)) return '';
+        if (diff <= 0) return '🔴 الحصة بدأت الآن';
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        if (days > 0) return `⏳ يبدأ خلال ${days} يوم و ${hours} ساعة`;
+        if (hours > 0) return `⏳ يبدأ خلال ${hours} ساعة و ${mins} دقيقة`;
+        if (mins > 0) return `⏳ يبدأ خلال ${mins} دقيقة و ${secs} ثانية`;
+        return `⏳ يبدأ خلال ${secs} ثانية`;
+      }
+      function updateCountdowns() {
+        document.querySelectorAll('.countdown[data-live-date]').forEach(el => {
+          el.textContent = formatCountdown(el.dataset.liveDate);
+        });
+      }
+      if (window.__eduvibeCountdownInterval) clearInterval(window.__eduvibeCountdownInterval);
+      window.__eduvibeCountdownInterval = setInterval(updateCountdowns, 1000);
+
       // دالة موحّدة لعرض لوحة التحكم — بتتقرأ من Firestore وتُستدعى من مكانين:
       // (أ) تلقائياً عند أي تغيّر في حالة الدخول، (ب) إجبارياً بعد ما يخلص كتابة
       // بيانات الحساب وقت التسجيل، عشان نضمن إن العرض دايماً مطابق لآخر بيانات
@@ -501,9 +547,9 @@
           teacherLockedNotice.style.display = 'block';
           teacherLockedNotice.textContent = '⏳ حسابك كمعلم قيد المراجعة حالياً من الإدارة.';
         } else {
+          // طالب: نخفي القسم كله، بدون أي رسالة تنبيه — مفيش داعي يشوف حاجة خاصة بالمعلمين أصلاً
           teacherSection.style.display = 'none';
-          teacherLockedNotice.style.display = 'block';
-          teacherLockedNotice.textContent = '🔒 لوحة إضافة الكورسات متاحة فقط لحسابات "المعلم" المعتمدة.';
+          teacherLockedNotice.style.display = 'none';
         }
 
         await renderPublicCourses();
@@ -578,6 +624,8 @@
 
       $('logoutBtn').addEventListener('click', async () => { await signOut(auth); });
 
+      let activeSubjectFilter = 'الكل';
+
       async function renderPublicCourses() {
         const grid = $('publicCoursesGrid');
         try {
@@ -586,10 +634,16 @@
           snap.forEach(d => allCoursesCache.push({ id: d.id, ...d.data() }));
           $('statCourses').innerText = allCoursesCache.length;
 
+          renderSubjectFilters();
+          const visibleCourses = activeSubjectFilter === 'الكل'
+            ? allCoursesCache
+            : allCoursesCache.filter(c => (c.subject || 'أخرى') === activeSubjectFilter);
+
           if (allCoursesCache.length === 0) { grid.innerHTML = '<p class="empty-note">لا توجد كورسات منشورة بعد.</p>'; return; }
+          if (visibleCourses.length === 0) { grid.innerHTML = '<p class="empty-note">لا توجد كورسات في هذه المادة بعد.</p>'; return; }
 
           grid.innerHTML = '';
-          allCoursesCache.forEach(course => {
+          visibleCourses.forEach(course => {
             const isOwner = auth.currentUser && course.createdBy === auth.currentUser.uid;
             const isEnrolled = currentEnrolledCourses.includes(course.id);
             const price = priceOf(course);
@@ -610,8 +664,10 @@
                 ${unlocked ? '' : '<div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>'}
               </div>
               <div class="course-card-body">
+                ${course.subject ? `<span style="color:var(--accent); font-size:0.72rem; font-weight:700;">${escapeHTML(course.subject)}</span>` : ''}
                 <h3>${escapeHTML(course.title)}</h3>
                 <p class="desc">${escapeHTML(course.description)}</p>
+                ${isLive && course.liveDate ? `<div class="live-date-note countdown" data-live-date="${course.liveDate}"></div>` : ''}
                 <div class="course-footer">
                   <span class="price-tag">${priceLabel}</span>
                   ${unlocked
@@ -625,10 +681,26 @@
 
           grid.querySelectorAll('[data-play]').forEach(btn => btn.addEventListener('click', () => playCourse(btn.dataset.play, btn.dataset.title, btn.dataset.type)));
           grid.querySelectorAll('[data-subscribe]').forEach(btn => btn.addEventListener('click', () => openSubscribeModal(btn.dataset.subscribe, btn.dataset.title)));
+          updateCountdowns();
         } catch (err) {
           console.error(err);
           grid.innerHTML = '<p class="empty-note">تعذر تحميل الكورسات حالياً.</p>';
         }
+      }
+
+      function renderSubjectFilters() {
+        const wrap = $('subjectFilters');
+        const subjects = ['الكل', ...new Set(allCoursesCache.map(c => c.subject || 'أخرى'))];
+        if (subjects.length <= 2) { wrap.innerHTML = ''; return; } // مفيش داعي للفلتر لو مادة واحدة بس
+        wrap.innerHTML = subjects.map(s =>
+          `<button type="button" class="subject-chip ${s === activeSubjectFilter ? 'active' : ''}" data-subject="${escapeAttr(s)}">${escapeHTML(s)}</button>`
+        ).join('');
+        wrap.querySelectorAll('[data-subject]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            activeSubjectFilter = btn.dataset.subject;
+            renderPublicCourses();
+          });
+        });
       }
 
       async function playCourse(courseId, title, ctype) {
@@ -648,10 +720,13 @@
               <p style="color:var(--live-red); font-weight:700; margin-bottom:10px;">موعد الحصة: ${dateStr}</p>
               <a href="${escapeAttr(data.liveUrl)}" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none; display:inline-flex;">انضم الآن للبث</a>`;
           } else if (isNotes) {
-            const notesHtml = escapeHTML(data.notesText || '').replace(/\n/g, '<br>');
             content.innerHTML = `
-              <div style="text-align:right; line-height:1.9; color:var(--text-primary); white-space:pre-wrap;">${notesHtml}</div>
+              <div id="notesDisplayText" class="no-copy" style="text-align:right; line-height:1.9; color:var(--text-primary);">${renderNotesHTML(data.notesText || '')}</div>
               ${data.notesUrl ? `<a href="${escapeAttr(data.notesUrl)}" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none; display:inline-flex; margin-top:14px;">📎 تحميل الملف المرفق</a>` : ''}`;
+            if (window.hljs) {
+              content.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+            }
+            enableNotesCopyProtection($('notesDisplayText'));
           } else {
             let origUrl = data.videoUrl;
             if (origUrl.includes('watch?v=')) origUrl = origUrl.replace('watch?v=', 'embed/');
@@ -714,20 +789,68 @@
       function escapeHTML(str) { return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
       function escapeAttr(str) { return escapeHTML(str); }
 
+      // يحوّل نص المذكرة: أي جزء بين ``` يتحول لصندوق كود ملوّن، والباقي نص عادي
+      function renderNotesHTML(rawText) {
+        const fenceRegex = /```(\w*)\n?([\s\S]*?)```/g;
+        let result = '', lastIndex = 0, match;
+        while ((match = fenceRegex.exec(rawText)) !== null) {
+          const before = rawText.slice(lastIndex, match.index);
+          result += escapeHTML(before).replace(/\n/g, '<br>');
+          const lang = (match[1] || '').trim();
+          const code = match[2];
+          result += `<pre><code class="${lang ? 'language-' + lang : ''}" style="direction:ltr; text-align:left; display:block;">${escapeHTML(code)}</code></pre>`;
+          lastIndex = fenceRegex.lastIndex;
+        }
+        result += escapeHTML(rawText.slice(lastIndex)).replace(/\n/g, '<br>');
+        return result;
+      }
+
+      // حماية بسيطة (رادع، مش حماية حقيقية) — تمنع النسخ/الزر الأيمن/التحديد
+      // داخل صندوق نص المذكرة فقط، مش أي مكان تاني في الصفحة
+      function enableNotesCopyProtection(el) {
+        if (!el) return;
+        el.addEventListener('copy', e => e.preventDefault());
+        el.addEventListener('cut', e => e.preventDefault());
+        el.addEventListener('contextmenu', e => e.preventDefault());
+        el.addEventListener('keydown', e => {
+          const key = e.key.toLowerCase();
+          if ((e.ctrlKey || e.metaKey) && (key === 'c' || key === 'x' || key === 'a' || key === 'p' || key === 's')) {
+            e.preventDefault();
+          }
+        });
+        el.setAttribute('tabindex', '0'); // عشان keydown يشتغل لو ركّز المتصفح عليه
+      }
+
+      // رابط زووم/يوتيوب حقيقي فقط — يمنع أي رابط عشوائي أو مضلل
+      function isValidLiveUrl(url) {
+        return /^https:\/\/([\w-]+\.)?(zoom\.us|youtube\.com|youtu\.be)\//i.test(url.trim());
+      }
+
       $('addCourseForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = $('addCourseMsg'); msg.textContent = '';
+        $('liveUrlError').textContent = '';
         if (currentUserRole !== 'teacher' || currentUserStatus !== 'approved') { msg.textContent = '❌ متاح فقط لحسابات المعلم المعتمدة.'; return; }
         const user = auth.currentUser;
         if (!user) { msg.textContent = '❌ يجب تسجيل الدخول أولاً.'; return; }
 
+        if (selectedCourseType === 'live' && !isValidLiveUrl($('liveUrl').value)) {
+          $('liveUrlError').textContent = '❌ الرابط لازم يكون رابط زووم (zoom.us) أو يوتيوب (youtube.com / youtu.be) حقيقي.';
+          return;
+        }
+
         const title = $('courseTitle').value.trim();
         const description = $('courseDesc').value.trim();
+        const subject = $('courseSubject').value;
         const price = Number($('coursePrice').value);
+        const liveDateIso = $('liveDate').value ? new Date($('liveDate').value).toISOString() : null;
 
         try {
           const courseRef = await addDoc(collection(db, "courses"), {
-            title, description, price, type: selectedCourseType, createdBy: user.uid, createdAt: new Date().toISOString()
+            title, description, subject, price, type: selectedCourseType, createdBy: user.uid, createdAt: new Date().toISOString(),
+            // تاريخ الحصة بس (بدون رابط الانضمام) بيتخزن هنا عشان العداد التنازلي يظهر
+            // حتى للطلاب اللي لسه ما فعّلوش الكورس، من غير ما نكشف رابط الدخول الفعلي
+            ...(selectedCourseType === 'live' ? { liveDate: liveDateIso } : {})
           });
 
           if (selectedCourseType === 'recorded') {
@@ -735,7 +858,7 @@
           } else if (selectedCourseType === 'live') {
             await setDoc(doc(db, "courses", courseRef.id, "content", "media"), {
               liveUrl: $('liveUrl').value.trim(),
-              liveDate: $('liveDate').value ? new Date($('liveDate').value).toISOString() : null
+              liveDate: liveDateIso
             });
           } else {
             await setDoc(doc(db, "courses", courseRef.id, "content", "media"), {
