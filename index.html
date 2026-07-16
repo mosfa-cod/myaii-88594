@@ -274,6 +274,7 @@
           <div class="type-toggle" style="margin-bottom:16px;">
             <button type="button" id="typeRecordedBtn" class="active">🎬 فيديو مسجل</button>
             <button type="button" id="typeLiveBtn">🔴 حصة مباشرة</button>
+            <button type="button" id="typeNotesBtn">📝 مذكرة</button>
           </div>
 
           <form id="addCourseForm">
@@ -300,6 +301,13 @@
               <input type="url" id="liveUrl" placeholder="https://zoom.us/j/..." style="text-align:left; direction:ltr; margin-bottom:12px;">
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">تاريخ ووقت الحصة:</label>
               <input type="datetime-local" id="liveDate">
+            </div>
+
+            <div id="notesFields" style="display:none;">
+              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">محتوى المذكرة:</label>
+              <textarea id="notesText" placeholder="اكتب محتوى المذكرة هنا بالكامل..." style="min-height:120px; resize:vertical; margin-bottom:12px;"></textarea>
+              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">رابط ملف إضافي (اختياري — Google Drive / PDF):</label>
+              <input type="url" id="notesUrl" placeholder="https://drive.google.com/..." style="text-align:left; direction:ltr;">
             </div>
 
             <div class="auth-msg" id="addCourseMsg"></div>
@@ -390,29 +398,40 @@
             });
         });
 
-        // ---------- تبديل نوع الكورس وقت النشر (فيديو / بث مباشر) ----------
+        // ---------- تبديل نوع الكورس وقت النشر (فيديو / بث مباشر / مذكرة) ----------
         const typeRecordedBtn = document.getElementById('typeRecordedBtn');
         const typeLiveBtn = document.getElementById('typeLiveBtn');
+        const typeNotesBtn = document.getElementById('typeNotesBtn');
         const recordedFields = document.getElementById('recordedFields');
         const liveFields = document.getElementById('liveFields');
+        const notesFields = document.getElementById('notesFields');
         let selectedCourseType = 'recorded';
-        typeRecordedBtn.addEventListener('click', () => {
-          selectedCourseType = 'recorded';
-          typeRecordedBtn.classList.add('active'); typeLiveBtn.classList.remove('active');
-          recordedFields.style.display = 'block'; liveFields.style.display = 'none';
-          document.getElementById('courseVideo').required = true;
+
+        function setCourseType(type) {
+          selectedCourseType = type;
+          [typeRecordedBtn, typeLiveBtn, typeNotesBtn].forEach(b => b.classList.remove('active'));
+          [recordedFields, liveFields, notesFields].forEach(f => f.style.display = 'none');
+          document.getElementById('courseVideo').required = false;
           document.getElementById('liveUrl').required = false;
           document.getElementById('liveDate').required = false;
-        });
-        typeLiveBtn.addEventListener('click', () => {
-          selectedCourseType = 'live';
-          typeLiveBtn.classList.add('active'); typeRecordedBtn.classList.remove('active');
-          liveFields.style.display = 'block'; recordedFields.style.display = 'none';
-          document.getElementById('courseVideo').required = false;
-          document.getElementById('liveUrl').required = true;
-          document.getElementById('liveDate').required = true;
-        });
-        document.getElementById('courseVideo').required = true;
+          document.getElementById('notesText').required = false;
+
+          if (type === 'recorded') {
+            typeRecordedBtn.classList.add('active'); recordedFields.style.display = 'block';
+            document.getElementById('courseVideo').required = true;
+          } else if (type === 'live') {
+            typeLiveBtn.classList.add('active'); liveFields.style.display = 'block';
+            document.getElementById('liveUrl').required = true;
+            document.getElementById('liveDate').required = true;
+          } else {
+            typeNotesBtn.classList.add('active'); notesFields.style.display = 'block';
+            document.getElementById('notesText').required = true;
+          }
+        }
+        typeRecordedBtn.addEventListener('click', () => setCourseType('recorded'));
+        typeLiveBtn.addEventListener('click', () => setCourseType('live'));
+        typeNotesBtn.addEventListener('click', () => setCourseType('notes'));
+        setCourseType('recorded');
     </script>
 
     <script type="module">
@@ -576,13 +595,17 @@
             const price = priceOf(course);
             const unlocked = isOwner || isEnrolled || price === 0;
             const priceLabel = price === 0 ? '<span class="free">مجاني</span>' : `${price} ج.م`;
-            const isLive = course.type === 'live';
+            const ctype = course.type || 'recorded';
+            const isLive = ctype === 'live';
+            const isNotes = ctype === 'notes';
+            const icon = isLive ? 'fa-tower-broadcast' : (isNotes ? 'fa-file-lines' : 'fa-graduation-cap');
+            const playLabel = isLive ? '🔴 دخول الحصة' : (isNotes ? '📝 عرض المذكرة' : '▶ شغّل الآن');
 
             const card = document.createElement('div');
             card.className = 'course-card';
             card.innerHTML = `
               <div class="course-card-image">
-                <i class="fa-solid ${isLive ? 'fa-tower-broadcast' : 'fa-graduation-cap'}"></i>
+                <i class="fa-solid ${icon}"></i>
                 ${isLive ? '<span class="live-badge"><span class="dot"></span> مباشر</span>' : ''}
                 ${unlocked ? '' : '<div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>'}
               </div>
@@ -592,7 +615,7 @@
                 <div class="course-footer">
                   <span class="price-tag">${priceLabel}</span>
                   ${unlocked
-                    ? `<button class="btn-play" data-play="${course.id}" data-title="${escapeAttr(course.title)}" data-live="${isLive}">${isLive ? '🔴 دخول الحصة' : '▶ شغّل الآن'}</button>`
+                    ? `<button class="btn-play" data-play="${course.id}" data-title="${escapeAttr(course.title)}" data-type="${ctype}">${playLabel}</button>`
                     : `<button class="btn-enroll" data-subscribe="${course.id}" data-title="${escapeAttr(course.title)}">فعّل بالكود</button>`
                   }
                 </div>
@@ -600,7 +623,7 @@
             grid.appendChild(card);
           });
 
-          grid.querySelectorAll('[data-play]').forEach(btn => btn.addEventListener('click', () => playCourse(btn.dataset.play, btn.dataset.title, btn.dataset.live === 'true')));
+          grid.querySelectorAll('[data-play]').forEach(btn => btn.addEventListener('click', () => playCourse(btn.dataset.play, btn.dataset.title, btn.dataset.type)));
           grid.querySelectorAll('[data-subscribe]').forEach(btn => btn.addEventListener('click', () => openSubscribeModal(btn.dataset.subscribe, btn.dataset.title)));
         } catch (err) {
           console.error(err);
@@ -608,20 +631,27 @@
         }
       }
 
-      async function playCourse(courseId, title, isLive) {
+      async function playCourse(courseId, title, ctype) {
+        const isLive = ctype === 'live';
+        const isNotes = ctype === 'notes';
         if (!auth.currentUser) { alert('سجّل الدخول أولاً.'); document.querySelector('#academy-auth-section').scrollIntoView({behavior:'smooth'}); return; }
         try {
           const contentDoc = await getDoc(doc(db, "courses", courseId, "content", "media"));
           if (!contentDoc.exists()) { alert('تعذر تحميل المحتوى.'); return; }
           const data = contentDoc.data();
           const box = $('mediaBox'), content = $('mediaContent');
-          $('mediaTitle').innerText = (isLive ? '🔴 حصة مباشرة: ' : '📺 جاري تشغيل: ') + title;
+          $('mediaTitle').innerText = (isLive ? '🔴 حصة مباشرة: ' : (isNotes ? '📝 مذكرة: ' : '📺 جاري تشغيل: ')) + title;
 
           if (isLive) {
             const dateStr = data.liveDate ? new Date(data.liveDate).toLocaleString('ar-EG') : 'غير محدد';
             content.innerHTML = `
               <p style="color:var(--live-red); font-weight:700; margin-bottom:10px;">موعد الحصة: ${dateStr}</p>
               <a href="${escapeAttr(data.liveUrl)}" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none; display:inline-flex;">انضم الآن للبث</a>`;
+          } else if (isNotes) {
+            const notesHtml = escapeHTML(data.notesText || '').replace(/\n/g, '<br>');
+            content.innerHTML = `
+              <div style="text-align:right; line-height:1.9; color:var(--text-primary); white-space:pre-wrap;">${notesHtml}</div>
+              ${data.notesUrl ? `<a href="${escapeAttr(data.notesUrl)}" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none; display:inline-flex; margin-top:14px;">📎 تحميل الملف المرفق</a>` : ''}`;
           } else {
             let origUrl = data.videoUrl;
             if (origUrl.includes('watch?v=')) origUrl = origUrl.replace('watch?v=', 'embed/');
@@ -702,15 +732,20 @@
 
           if (selectedCourseType === 'recorded') {
             await setDoc(doc(db, "courses", courseRef.id, "content", "media"), { videoUrl: $('courseVideo').value.trim() });
-          } else {
+          } else if (selectedCourseType === 'live') {
             await setDoc(doc(db, "courses", courseRef.id, "content", "media"), {
               liveUrl: $('liveUrl').value.trim(),
               liveDate: $('liveDate').value ? new Date($('liveDate').value).toISOString() : null
             });
+          } else {
+            await setDoc(doc(db, "courses", courseRef.id, "content", "media"), {
+              notesText: $('notesText').value.trim(),
+              notesUrl: $('notesUrl').value.trim() || null
+            });
           }
 
           $('addCourseForm').reset();
-          typeRecordedBtn.click();
+          setCourseType('recorded');
           msg.style.color = 'var(--accent)';
           msg.textContent = '✅ تم نشر الكورس بنجاح!';
           await renderPublicCourses();
