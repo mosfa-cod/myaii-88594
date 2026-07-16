@@ -438,9 +438,11 @@
 
       function priceOf(course) { return typeof course.price === 'number' ? course.price : 0; }
 
-      onAuthStateChanged(auth, async (user) => {
-        authLoading.style.display = 'none';
-
+      // دالة موحّدة لعرض لوحة التحكم — بتتقرأ من Firestore وتُستدعى من مكانين:
+      // (أ) تلقائياً عند أي تغيّر في حالة الدخول، (ب) إجبارياً بعد ما يخلص كتابة
+      // بيانات الحساب وقت التسجيل، عشان نضمن إن العرض دايماً مطابق لآخر بيانات
+      // محفوظة فعلياً ومفيش "سباق" بين ظهور اللوحة وبين اكتمال الحفظ.
+      async function refreshDashboard(user) {
         if (!user) {
           registerBox.style.display = 'block';
           loginBox.style.display = 'block';
@@ -487,6 +489,11 @@
 
         await renderPublicCourses();
         await renderStats(user);
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        authLoading.style.display = 'none';
+        await refreshDashboard(user);
       });
 
       async function renderStats(user) {
@@ -523,6 +530,9 @@
           await setDoc(doc(db, "students", cred.user.uid), payload);
           $('studentRegisterForm').reset();
           if (role === 'teacher') { msg.style.color = 'var(--accent)'; msg.textContent = '✅ تم إنشاء الحساب! طلبك قيد المراجعة الآن.'; }
+          // نجبر إعادة قراءة وعرض اللوحة الآن بعد ما الحفظ في Firestore خلص فعلياً،
+          // عشان نضمن إن الدور والحالة المعروضين مطابقين لما اتكتب بالظبط
+          await refreshDashboard(cred.user);
         } catch (error) {
           console.error(error);
           let m = 'حدث خطأ أثناء التسجيل';
