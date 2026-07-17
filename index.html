@@ -105,7 +105,7 @@
 
         .why-section { background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 46px 36px; }
         .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
-        .feature-card { text-align: center; padding: 22px 14px; border-radius: var(--radius-md); border: 1px solid transparent; }
+        .feature-card { text-align: center; padding: 22px 14px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; }
         .feature-card:hover { background: var(--bg-card); border-color: var(--border-glow); }
         .feature-icon-wrap { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 1.3rem; color: var(--accent); border: 1px solid var(--border-glow); }
         .feature-card h4 { font-weight: 800; font-size: 0.98rem; margin-bottom: 6px; }
@@ -227,7 +227,11 @@
             <h2>الكورسات المتاحة</h2>
             <p>تصفح كل الكورسات مجاناً — فعّل أي كورس بكود التفعيل لفتح محتواه كاملاً</p>
         </div>
-        <div id="subjectFilters" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:24px;"></div>
+        <div id="subjectFilters" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:10px;"></div>
+        <div id="liveOnlyBanner" style="display:none; text-align:center; margin-bottom:20px;">
+          <span class="subject-chip active">🔴 الحصص المباشرة فقط</span>
+          <button type="button" id="clearLiveFilterBtn" class="subject-chip" style="margin-right:6px;">إلغاء الفلتر ✕</button>
+        </div>
         <div class="courses-grid" id="publicCoursesGrid"><p class="empty-note">⏳ جاري تحميل الكورسات...</p></div>
     </section>
 
@@ -355,10 +359,10 @@
         </div>
         <div class="why-section">
             <div class="features-grid">
-                <div class="feature-card"><div class="feature-icon-wrap"><i class="fa-solid fa-certificate"></i></div><h4>شهادات معتمدة</h4><p>شهادات تثبت مهاراتك</p></div>
-                <div class="feature-card"><div class="feature-icon-wrap"><i class="fa-solid fa-key"></i></div><h4>تفعيل بكود</h4><p>افتح الكورس فوراً بكود من معلمك</p></div>
-                <div class="feature-card"><div class="feature-icon-wrap"><i class="fa-solid fa-tower-broadcast"></i></div><h4>حصص مباشرة</h4><p>احضر البث المباشر لحظة بلحظة</p></div>
-                <div class="feature-card"><div class="feature-icon-wrap"><i class="fa-solid fa-headset"></i></div><h4>دعم متواصل</h4><p>فريق دعم متاح للإجابة عن استفساراتك</p></div>
+                <div class="feature-card" data-action="certificates" role="button" tabindex="0"><div class="feature-icon-wrap"><i class="fa-solid fa-certificate"></i></div><h4>شهادات معتمدة</h4><p>شهادات تثبت مهاراتك</p></div>
+                <div class="feature-card" data-action="activate" role="button" tabindex="0"><div class="feature-icon-wrap"><i class="fa-solid fa-key"></i></div><h4>تفعيل بكود</h4><p>افتح الكورس فوراً بكود من معلمك</p></div>
+                <div class="feature-card" data-action="live" role="button" tabindex="0"><div class="feature-icon-wrap"><i class="fa-solid fa-tower-broadcast"></i></div><h4>حصص مباشرة</h4><p>احضر البث المباشر لحظة بلحظة</p></div>
+                <div class="feature-card" data-action="support" role="button" tabindex="0"><div class="feature-icon-wrap"><i class="fa-solid fa-headset"></i></div><h4>دعم متواصل</h4><p>فريق دعم متاح للإجابة عن استفساراتك</p></div>
             </div>
         </div>
     </section>
@@ -625,6 +629,7 @@
       $('logoutBtn').addEventListener('click', async () => { await signOut(auth); });
 
       let activeSubjectFilter = 'الكل';
+      let showLiveOnly = false;
 
       async function renderPublicCourses() {
         const grid = $('publicCoursesGrid');
@@ -635,12 +640,14 @@
           $('statCourses').innerText = allCoursesCache.length;
 
           renderSubjectFilters();
-          const visibleCourses = activeSubjectFilter === 'الكل'
+          $('liveOnlyBanner').style.display = showLiveOnly ? 'block' : 'none';
+          let visibleCourses = activeSubjectFilter === 'الكل'
             ? allCoursesCache
             : allCoursesCache.filter(c => (c.subject || 'أخرى') === activeSubjectFilter);
+          if (showLiveOnly) visibleCourses = visibleCourses.filter(c => c.type === 'live');
 
           if (allCoursesCache.length === 0) { grid.innerHTML = '<p class="empty-note">لا توجد كورسات منشورة بعد.</p>'; return; }
-          if (visibleCourses.length === 0) { grid.innerHTML = '<p class="empty-note">لا توجد كورسات في هذه المادة بعد.</p>'; return; }
+          if (visibleCourses.length === 0) { grid.innerHTML = '<p class="empty-note">لا توجد كورسات مطابقة حالياً.</p>'; return; }
 
           grid.innerHTML = '';
           visibleCourses.forEach(course => {
@@ -962,6 +969,31 @@
           list.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">تعذر تحميل الأكواد.</p>';
         }
       }
+
+      // ---------- ربط كروت "لماذا نحن" الأربعة بوظائف فعلية ----------
+      $('clearLiveFilterBtn').addEventListener('click', () => { showLiveOnly = false; renderPublicCourses(); });
+
+      document.querySelectorAll('.feature-card[data-action]').forEach(card => {
+        const activate = () => {
+          const action = card.dataset.action;
+          if (action === 'live') {
+            showLiveOnly = true;
+            renderPublicCourses();
+            document.querySelector('#courses').scrollIntoView({ behavior: 'smooth' });
+          } else if (action === 'activate') {
+            document.querySelector('#courses').scrollIntoView({ behavior: 'smooth' });
+          } else if (action === 'certificates') {
+            document.querySelector('#academy-auth-section').scrollIntoView({ behavior: 'smooth' });
+          } else if (action === 'support') {
+            // ⚠️ استبدل الرقم ده برقمك الحقيقي بصيغة دولية بدون + أو أصفار زيادة (مثال: مصر يبدأ بـ 20)
+            const supportPhoneNumber = '201000000000';
+            const waMessage = encodeURIComponent('مرحباً، عندي استفسار بخصوص منصة EduVibe');
+            window.open(`https://wa.me/${supportPhoneNumber}?text=${waMessage}`, '_blank');
+          }
+        };
+        card.addEventListener('click', activate);
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
+      });
 
       renderPublicCourses();
     </script>
