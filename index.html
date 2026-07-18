@@ -193,6 +193,45 @@
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
         .overlay.show { display: block; }
 
+        .floating-whatsapp {
+            position: fixed; bottom: 24px; left: 24px; z-index: 1500;
+            width: 58px; height: 58px; border-radius: 50%;
+            background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem; text-decoration: none; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.5);
+            animation: waPulse 2.4s infinite;
+        }
+        .floating-whatsapp:hover { transform: scale(1.08); }
+        @keyframes waPulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+            70% { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        @media (max-width: 768px) {
+            .floating-whatsapp { bottom: 16px; left: 16px; width: 52px; height: 52px; font-size: 1.5rem; }
+            .quick-chat-panel { left: 12px; bottom: 84px; width: calc(100% - 24px); max-width: 320px; }
+        }
+
+        .quick-chat-panel {
+            display: none; position: fixed; bottom: 94px; left: 24px; z-index: 1500;
+            width: 300px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); overflow: hidden;
+        }
+        .quick-chat-panel.show { display: block; }
+        .quick-chat-header {
+            background: var(--accent); color: #000; padding: 14px 16px; font-weight: 800; font-size: 0.95rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .quick-chat-header button { background: none; border: none; color: #000; font-size: 1rem; cursor: pointer; }
+        .quick-chat-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .quick-chat-option {
+            background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-primary);
+            padding: 10px 14px; border-radius: 10px; text-align: right; cursor: pointer; font-size: 0.85rem;
+            font-family: 'Cairo', sans-serif; transition: var(--transition);
+        }
+        .quick-chat-option:hover { border-color: var(--accent); color: var(--accent); }
+        .quick-chat-answer { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8; padding: 4px 2px; }
+        .quick-chat-answer .qc-back { display: inline-block; margin-top: 10px; color: var(--accent); cursor: pointer; font-weight: 700; font-size: 0.8rem; }
+
         /* منع التحديد/النسخ — يُطبّق فقط داخل صندوق عرض المذكرة */
         .no-copy, .no-copy * {
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
@@ -224,6 +263,22 @@
         </div>
     </nav>
     <div class="overlay" id="overlay"></div>
+
+    <div id="quickChatPanel" class="quick-chat-panel">
+        <div class="quick-chat-header">
+            👋 إزاي أقدر أساعدك؟
+            <button type="button" id="quickChatClose" aria-label="إغلاق">✕</button>
+        </div>
+        <div class="quick-chat-body" id="quickChatBody">
+            <button type="button" class="quick-chat-option" data-qc="about">🎓 عايز أعرف عن المنصة</button>
+            <button type="button" class="quick-chat-option" data-qc="howto">📖 عايز أفهم أستخدمها إزاي</button>
+            <button type="button" class="quick-chat-option" data-qc="rent">💼 عايز أستأجرها لأدرّس عليها</button>
+            <button type="button" class="quick-chat-option" data-qc="other">💬 عندي سؤال تاني</button>
+        </div>
+    </div>
+    <button type="button" id="quickChatToggle" class="floating-whatsapp" title="تواصل معايا">
+        <i class="fa-solid fa-comment-dots"></i>
+    </button>
 
     <section class="hero" id="home">
         <div class="hero-content">
@@ -445,6 +500,52 @@
             applyThemeButtons();
         }));
         applyThemeButtons();
+
+        // ---------- ودجت الرد السريع (Quick Chat) ----------
+        const qcPanel = document.getElementById('quickChatPanel');
+        const qcToggle = document.getElementById('quickChatToggle');
+        const qcClose = document.getElementById('quickChatClose');
+        const qcBody = document.getElementById('quickChatBody');
+        const SUPPORT_WA_NUMBER = '201553830995';
+
+        const qcOptionsHTML = `
+            <button type="button" class="quick-chat-option" data-qc="about">🎓 عايز أعرف عن المنصة</button>
+            <button type="button" class="quick-chat-option" data-qc="howto">📖 عايز أفهم أستخدمها إزاي</button>
+            <button type="button" class="quick-chat-option" data-qc="rent">💼 عايز أستأجرها لأدرّس عليها</button>
+            <button type="button" class="quick-chat-option" data-qc="other">💬 عندي سؤال تاني</button>
+        `;
+
+        const qcAnswers = {
+          about: 'المنصة دي مساحة تعليمية بيقدر أي معلم ينشر عليها دروسه (فيديو مسجل، حصة مباشرة، أو مذكرة)، ويبيعها للطلاب بكود تفعيل بسيط، من غير تعقيد.',
+          howto: 'تسجّل حساب، تختار "معلم"، وبعد ما الإدارة توافق على حسابك، تقدر تنشر أول درس بسعره، وتولّد كود تفعيل تدّيه للطالب اللي دفعلك.'
+        };
+
+        function qcShowOptions() { qcBody.innerHTML = qcOptionsHTML; qcBindOptions(); }
+
+        function qcBindOptions() {
+          qcBody.querySelectorAll('[data-qc]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const key = btn.dataset.qc;
+              if (key === 'about' || key === 'howto') {
+                qcBody.innerHTML = `<div class="quick-chat-answer">${qcAnswers[key]}<br><span class="qc-back">⬅ رجوع للخيارات</span></div>`;
+                qcBody.querySelector('.qc-back').addEventListener('click', qcShowOptions);
+              } else if (key === 'rent') {
+                const msg = encodeURIComponent('مرحباً أستاذ مصطفى، أنا معلم وعايز أستأجر المنصة عشان أدرّس عليها.');
+                window.open(`https://wa.me/${SUPPORT_WA_NUMBER}?text=${msg}`, '_blank');
+              } else {
+                const msg = encodeURIComponent('مرحباً أستاذ مصطفى، عندي سؤال بخصوص المنصة.');
+                window.open(`https://wa.me/${SUPPORT_WA_NUMBER}?text=${msg}`, '_blank');
+              }
+            });
+          });
+        }
+        qcBindOptions();
+
+        qcToggle.addEventListener('click', () => {
+          qcPanel.classList.toggle('show');
+          if (qcPanel.classList.contains('show')) qcShowOptions();
+        });
+        qcClose.addEventListener('click', () => qcPanel.classList.remove('show'));
 
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
