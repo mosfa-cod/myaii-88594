@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduVibe - أكاديمية المستقبل الرقمية</title>
+    <title>الأستاذ مصطفى عبدالعال دحروج - منصتي التعليمية</title>
     <script>
       (function () {
         var saved = localStorage.getItem('eduvibe-theme') || 'dark';
@@ -40,6 +40,22 @@
             --border-color: #423722; --border-glow: rgba(224, 164, 88, 0.3); --star-gold: #e8b84b;
             --shadow-glow: 0 0 30px rgba(224, 164, 88, 0.12); --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
             --input-bg: #322a1d; --input-border: #4a3d26; --live-red: #ff6b6b;
+        }
+        [data-theme="ocean"] {
+            --bg-primary: #071224; --bg-secondary: #0c1a30; --bg-card: #10233d; --bg-card-hover: #142c4a;
+            --accent: #2dd4bf; --accent-glow: rgba(45, 212, 191, 0.3); --accent-soft: rgba(45, 212, 191, 0.1);
+            --text-primary: #e4f2f0; --text-secondary: #a9c3c9; --text-muted: #75919a;
+            --border-color: #1c3350; --border-glow: rgba(45, 212, 191, 0.3); --star-gold: #f5c542;
+            --shadow-glow: 0 0 30px rgba(45, 212, 191, 0.15); --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+            --input-bg: #10233d; --input-border: #1c3350; --live-red: #ff5577;
+        }
+        [data-theme="rose"] {
+            --bg-primary: #1c0f18; --bg-secondary: #24131e; --bg-card: #2d1826; --bg-card-hover: #371e2f;
+            --accent: #ff6f91; --accent-glow: rgba(255, 111, 145, 0.3); --accent-soft: rgba(255, 111, 145, 0.1);
+            --text-primary: #f5e6ee; --text-secondary: #cba7bb; --text-muted: #9c7c8c;
+            --border-color: #3d2131; --border-glow: rgba(255, 111, 145, 0.3); --star-gold: #f5b642;
+            --shadow-glow: 0 0 30px rgba(255, 111, 145, 0.15); --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+            --input-bg: #2d1826; --input-border: #3d2131; --live-red: #ff3b5c;
         }
         :root { --radius-lg: 20px; --radius-md: 14px; --radius-sm: 10px; --transition: 0.3s cubic-bezier(0.4,0,0.2,1); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -102,6 +118,9 @@
         .empty-note { color: var(--text-muted); text-align: center; padding: 30px; grid-column: 1 / -1; }
         .subject-chip { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 7px 16px; border-radius: 50px; font-size: 0.82rem; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; transition: var(--transition); }
         .subject-chip.active { background: var(--accent); border-color: var(--accent); color: #000; }
+        .announcement-item { background: var(--accent-soft); border: 1px solid var(--border-glow); border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 0.88rem; color: var(--text-primary); text-align: right; }
+        .announcement-item .ann-date { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+        .new-badge { background: var(--accent); color: #000; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; margin-right: 6px; }
 
         .why-section { background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 46px 36px; }
         .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
@@ -184,7 +203,7 @@
 
     <nav class="navbar" id="navbar">
         <div class="navbar-inner">
-            <a href="#" class="nav-logo"><div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div><span>EduVibe</span></a>
+            <a href="#" class="nav-logo"><div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div><span>أ. مصطفى دحروج</span></a>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#home">الرئيسية</a></li>
                 <li><a href="#courses">الدورات</a></li>
@@ -197,6 +216,8 @@
                     <button class="theme-btn" data-theme-btn="dark" title="داكن"><i class="fa-solid fa-moon"></i></button>
                     <button class="theme-btn" data-theme-btn="light" title="فاتح"><i class="fa-solid fa-sun"></i></button>
                     <button class="theme-btn" data-theme-btn="warm" title="مذاكرة"><i class="fa-solid fa-book-open"></i></button>
+                    <button class="theme-btn" data-theme-btn="ocean" title="محيطي"><i class="fa-solid fa-water"></i></button>
+                    <button class="theme-btn" data-theme-btn="rose" title="وردي"><i class="fa-solid fa-gem"></i></button>
                 </div>
                 <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
             </div>
@@ -206,9 +227,9 @@
 
     <section class="hero" id="home">
         <div class="hero-content">
-            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> الأكاديمية الرقمية الأولى في العالم العربي</div>
-            <h1>تعلّم <span class="highlight">مهارات المستقبل</span><br>وابنِ مسارك المهني بثقة</h1>
-            <p>تصفّح كل الدورات مجاناً، وفعّل أي كورس بكود التفعيل اللي هيديك إياه معلمك.</p>
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> منصة الأستاذ مصطفى عبدالعال دحروج التعليمية</div>
+            <h1>تعلّم مع <span class="highlight">الأستاذ مصطفى دحروج</span><br>وابنِ مسارك التعليمي بثقة</h1>
+            <p>تصفّح كل الدروس مجاناً، وفعّل أي درس بكود التفعيل اللي هديّهولك بنفسي.</p>
             <div class="hero-buttons">
                 <a href="#courses" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i> استكشف الدورات</a>
                 <a href="#academy-auth-section" class="btn-outline"><i class="fa-solid fa-user"></i> حسابي</a>
@@ -267,6 +288,7 @@
 
       <div id="dashboardBox">
         <h2>👋 مرحباً بك <span id="dashRolePill"></span></h2>
+        <div id="announcementsBanner"></div>
         <p style="font-size:16px; margin:10px 0;">الاسم: <span id="dashStudentName" style="color:var(--accent); font-weight:bold;">-</span></p>
         <p style="font-size:15px; margin:6px 0; color:var(--text-muted);">البريد الإلكتروني: <span id="dashStudentEmail">-</span></p>
         <div class="stats-row" id="statsRow"></div>
@@ -284,6 +306,17 @@
         <div class="auth-box" style="max-width:600px; text-align:right;">
           <h2 style="color:var(--accent); margin-bottom:5px; font-size:24px;">💼 لوحة تحكم المعلم</h2>
           <p class="sub" style="font-size:14px;">أضف كورساً (فيديو مسجل أو حصة مباشرة) بسعره</p>
+
+          <div class="codes-panel" style="margin-top:0; padding-top:0; border-top:none;">
+            <h3>👤 بياناتك كمعلم (تظهر للطلاب في كورساتك)</h3>
+            <form id="teacherProfileForm" style="margin-bottom:10px;">
+              <input type="text" id="teacherSpecialty" placeholder="تخصصك (مثال: معلم لغة عربية)" style="margin-bottom:10px;">
+              <input type="tel" id="teacherPhone" placeholder="رقم واتساب للتواصل (مثال: 01553830995)" style="margin-bottom:10px; direction:ltr; text-align:left;">
+              <textarea id="teacherBio" placeholder="نبذة قصيرة عنك (اختياري)" style="min-height:60px; resize:vertical; margin-bottom:10px;"></textarea>
+              <div class="auth-msg" id="teacherProfileMsg"></div>
+              <button type="submit" class="btn-outline" style="width:100%; justify-content:center;">💾 حفظ بياناتي</button>
+            </form>
+          </div>
 
           <div class="type-toggle" style="margin-bottom:16px;">
             <button type="button" id="typeRecordedBtn" class="active">🎬 فيديو مسجل</button>
@@ -324,7 +357,7 @@
             </div>
 
             <div id="liveFields" style="display:none;">
-              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">رابط البث (يوتيوب لايف / زووم):</label>
+              <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">رابط البث (يوتيوب لايف / زووم / جوجل ميت):</label>
               <input type="url" id="liveUrl" placeholder="https://zoom.us/j/..." style="text-align:left; direction:ltr;">
               <div class="auth-msg" id="liveUrlError" style="color:#f87171; margin-bottom:12px;"></div>
               <label style="color:var(--text-secondary); display:block; margin-bottom:6px; font-size:13px;">تاريخ ووقت الحصة:</label>
@@ -354,7 +387,7 @@
       <p id="teacherLockedNotice">🔒 لوحة إضافة الكورسات متاحة فقط لحسابات "المعلم" المعتمدة.</p>
 
         <div class="section-header">
-            <div class="section-tag">✨ لماذا EduVibe؟</div>
+            <div class="section-tag">✨ ليه تختار الأستاذ مصطفى؟</div>
             <h2>ما يميزنا عن غيرنا</h2>
         </div>
         <div class="why-section">
@@ -373,7 +406,7 @@
             <a href="#"><i class="fa-brands fa-instagram"></i></a>
             <a href="#"><i class="fa-brands fa-youtube"></i></a>
         </div>
-        <p>© ٢٠٢٦ EduVibe - جميع الحقوق محفوظة</p>
+        <p>© ٢٠٢٦ الأستاذ مصطفى عبدالعال دحروج - جميع الحقوق محفوظة</p>
     </footer>
 
     <div class="modal-overlay" id="subscribeModal">
@@ -480,16 +513,38 @@
       const subscribeModal = $('subscribeModal');
 
       let currentUserRole = null, currentUserStatus = null, currentEnrolledCourses = [];
+      let currentTeacherProfile = { name: '', specialty: '', phone: '', bio: '' };
       let allCoursesCache = [];
       let pendingSubscribeCourse = null;
 
       function priceOf(course) { return typeof course.price === 'number' ? course.price : 0; }
 
+      // يحوّل أي صيغة يكتبها المعلم لرقمه (01xxxxxxxxx أو +20xxx أو 20xxx) لصيغة wa.me الصحيحة
+      function formatPhoneForWa(phone) {
+        let digits = String(phone || '').replace(/[^\d]/g, '');
+        if (digits.startsWith('0')) digits = '20' + digits.slice(1);
+        else if (!digits.startsWith('20')) digits = '20' + digits;
+        return digits;
+      }
+
+      // لون مميز وثابت لكل مادة — نفس المادة دايماً بنفس اللون في كل الموقع
+      const subjectPalette = ['#00d4ff', '#a855f7', '#f5a623', '#22c55e', '#ff3b5c', '#38bdf8', '#e0a458'];
+      function colorForSubject(subject) {
+        if (!subject) return 'var(--accent)';
+        let hash = 0;
+        for (let i = 0; i < subject.length; i++) hash = subject.charCodeAt(i) + ((hash << 5) - hash);
+        return subjectPalette[Math.abs(hash) % subjectPalette.length];
+      }
+
       // ---------- العداد التنازلي للحصص المباشرة ----------
       function formatCountdown(targetIso) {
         const diff = new Date(targetIso).getTime() - Date.now();
         if (isNaN(diff)) return '';
-        if (diff <= 0) return '🔴 الحصة بدأت الآن';
+        if (diff <= 0) {
+          const elapsedMin = Math.floor(-diff / 60000);
+          if (elapsedMin < 1) return '🔴 الحصة بدأت الآن — ادخل!';
+          return `🔴 الحصة بدأت من ${elapsedMin} دقيقة — ادخل الآن، لسه وقتك متاح`;
+        }
         const days = Math.floor(diff / 86400000);
         const hours = Math.floor((diff % 86400000) / 3600000);
         const mins = Math.floor((diff % 3600000) / 60000);
@@ -545,6 +600,15 @@
         if (currentUserRole === 'teacher' && currentUserStatus === 'approved') {
           teacherSection.style.display = 'block';
           teacherLockedNotice.style.display = 'none';
+          $('teacherSpecialty').value = studentData.teacherSpecialty || '';
+          $('teacherPhone').value = studentData.teacherPhone || '';
+          $('teacherBio').value = studentData.teacherBio || '';
+          currentTeacherProfile = {
+            name: studentData.fullName || user.displayName || '',
+            specialty: studentData.teacherSpecialty || '',
+            phone: studentData.teacherPhone || '',
+            bio: studentData.teacherBio || ''
+          };
           await populateCodesCourseSelect(user);
         } else if (currentUserRole === 'teacher' && currentUserStatus === 'pending') {
           teacherSection.style.display = 'none';
@@ -558,6 +622,28 @@
 
         await renderPublicCourses();
         await renderStats(user);
+        await renderAnnouncements();
+      }
+
+      // ---------- البلاغات: تُنشر يدوياً من الإدارة عبر Firestore Console (لا نحتاج لوحة إدارة) ----------
+      async function renderAnnouncements() {
+        const box = $('announcementsBanner');
+        if (!box) return;
+        box.innerHTML = '';
+        try {
+          const audience = currentUserRole === 'teacher' ? 'teachers' : 'students';
+          const snap = await getDocs(query(collection(db, "announcements"), where("audience", "in", [audience, "all"])));
+          const items = [];
+          snap.forEach(d => items.push(d.data()));
+          items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          items.slice(0, 3).forEach(a => {
+            const div = document.createElement('div');
+            div.className = 'announcement-item';
+            const dateStr = a.createdAt ? new Date(a.createdAt).toLocaleDateString('ar-EG') : '';
+            div.innerHTML = `📢 ${escapeHTML(a.message || '')}<span class="ann-date">${dateStr}</span>`;
+            box.appendChild(div);
+          });
+        } catch (err) { console.error(err); }
       }
 
       onAuthStateChanged(auth, async (user) => {
@@ -661,19 +747,27 @@
             const isNotes = ctype === 'notes';
             const icon = isLive ? 'fa-tower-broadcast' : (isNotes ? 'fa-file-lines' : 'fa-graduation-cap');
             const playLabel = isLive ? '🔴 دخول الحصة' : (isNotes ? '📝 عرض المذكرة' : '▶ شغّل الآن');
+            const subjectColor = colorForSubject(course.subject);
+            const isNew = course.createdAt && (Date.now() - new Date(course.createdAt).getTime()) < 7 * 86400000;
 
             const card = document.createElement('div');
             card.className = 'course-card';
+            card.style.borderTop = `3px solid ${subjectColor}`;
             card.innerHTML = `
-              <div class="course-card-image">
+              <div class="course-card-image" style="background: linear-gradient(135deg, ${subjectColor}22, transparent); color:${subjectColor};">
                 <i class="fa-solid ${icon}"></i>
                 ${isLive ? '<span class="live-badge"><span class="dot"></span> مباشر</span>' : ''}
                 ${unlocked ? '' : '<div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>'}
               </div>
               <div class="course-card-body">
-                ${course.subject ? `<span style="color:var(--accent); font-size:0.72rem; font-weight:700;">${escapeHTML(course.subject)}</span>` : ''}
-                <h3>${escapeHTML(course.title)}</h3>
+                ${course.subject ? `<span style="color:${subjectColor}; font-size:0.72rem; font-weight:700;">${escapeHTML(course.subject)}</span>` : ''}
+                <h3>${isNew ? '<span class="new-badge">جديد</span>' : ''}${escapeHTML(course.title)}</h3>
                 <p class="desc">${escapeHTML(course.description)}</p>
+                ${course.teacherName ? `
+                  <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+                    <span>👨‍🏫 ${escapeHTML(course.teacherName)}${course.teacherSpecialty ? ' — ' + escapeHTML(course.teacherSpecialty) : ''}</span>
+                    ${course.teacherPhone ? `<a href="https://wa.me/${formatPhoneForWa(course.teacherPhone)}" target="_blank" rel="noopener" style="color:#25D366; font-size:1rem;" title="تواصل واتساب"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+                  </div>` : ''}
                 ${isLive && course.liveDate ? `<div class="live-date-note countdown" data-live-date="${course.liveDate}"></div>` : ''}
                 <div class="course-footer">
                   <span class="price-tag">${priceLabel}</span>
@@ -828,10 +922,34 @@
         el.setAttribute('tabindex', '0'); // عشان keydown يشتغل لو ركّز المتصفح عليه
       }
 
-      // رابط زووم/يوتيوب حقيقي فقط — يمنع أي رابط عشوائي أو مضلل
+      // رابط زووم/يوتيوب/جوجل ميت حقيقي فقط — يمنع أي رابط عشوائي أو مضلل
       function isValidLiveUrl(url) {
-        return /^https:\/\/([\w-]+\.)?(zoom\.us|youtube\.com|youtu\.be)\//i.test(url.trim());
+        return /^https:\/\/([\w-]+\.)?(zoom\.us|youtube\.com|youtu\.be|meet\.google\.com)\//i.test(url.trim());
       }
+
+      // ---------- حفظ بيانات المعلم الشخصية (تخصصه، رقمه، نبذته) ----------
+      $('teacherProfileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = $('teacherProfileMsg');
+        const user = auth.currentUser;
+        if (!user || currentUserRole !== 'teacher') return;
+        try {
+          await updateDoc(doc(db, "students", user.uid), {
+            teacherSpecialty: $('teacherSpecialty').value.trim(),
+            teacherPhone: $('teacherPhone').value.trim(),
+            teacherBio: $('teacherBio').value.trim()
+          });
+          currentTeacherProfile.specialty = $('teacherSpecialty').value.trim();
+          currentTeacherProfile.phone = $('teacherPhone').value.trim();
+          currentTeacherProfile.bio = $('teacherBio').value.trim();
+          msg.style.color = 'var(--accent)';
+          msg.textContent = '✅ تم حفظ بياناتك.';
+        } catch (err) {
+          console.error(err);
+          msg.style.color = '#f87171';
+          msg.textContent = '❌ تعذر الحفظ، حاول تاني.';
+        }
+      });
 
       $('addCourseForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -842,7 +960,7 @@
         if (!user) { msg.textContent = '❌ يجب تسجيل الدخول أولاً.'; return; }
 
         if (selectedCourseType === 'live' && !isValidLiveUrl($('liveUrl').value)) {
-          $('liveUrlError').textContent = '❌ الرابط لازم يكون رابط زووم (zoom.us) أو يوتيوب (youtube.com / youtu.be) حقيقي.';
+          $('liveUrlError').textContent = '❌ الرابط لازم يكون رابط زووم (zoom.us) أو يوتيوب (youtube.com / youtu.be) أو جوجل ميت (meet.google.com) حقيقي.';
           return;
         }
 
@@ -855,6 +973,11 @@
         try {
           const courseRef = await addDoc(collection(db, "courses"), {
             title, description, subject, price, type: selectedCourseType, createdBy: user.uid, createdAt: new Date().toISOString(),
+            // بيانات المعلم العامة (اسمه، تخصصه، رقمه) بتتخزن هنا وقت النشر عشان تظهر
+            // للطلاب على البطاقة، مع إن حساب المعلم نفسه (students/{uid}) محمي وخاص
+            teacherName: currentTeacherProfile.name,
+            teacherSpecialty: currentTeacherProfile.specialty,
+            teacherPhone: currentTeacherProfile.phone,
             // تاريخ الحصة بس (بدون رابط الانضمام) بيتخزن هنا عشان العداد التنازلي يظهر
             // حتى للطلاب اللي لسه ما فعّلوش الكورس، من غير ما نكشف رابط الدخول الفعلي
             ...(selectedCourseType === 'live' ? { liveDate: liveDateIso } : {})
@@ -986,8 +1109,8 @@
             document.querySelector('#academy-auth-section').scrollIntoView({ behavior: 'smooth' });
           } else if (action === 'support') {
             // ⚠️ استبدل الرقم ده برقمك الحقيقي بصيغة دولية بدون + أو أصفار زيادة (مثال: مصر يبدأ بـ 20)
-            const supportPhoneNumber = '201000000000';
-            const waMessage = encodeURIComponent('مرحباً، عندي استفسار بخصوص منصة EduVibe');
+            const supportPhoneNumber = '201553830995';
+            const waMessage = encodeURIComponent('مرحباً، عندي استفسار بخصوص منصة الأستاذ مصطفى دحروج');
             window.open(`https://wa.me/${supportPhoneNumber}?text=${waMessage}`, '_blank');
           }
         };
